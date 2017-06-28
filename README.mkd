@@ -1,0 +1,53 @@
+# Concept generation comparison
+Multiple concept generation methods are implemented in
+[ASP](https://en.wikipedia.org/wiki/Answer_set_programming),
+and compared in runtime for a randomly generated set of contexts of various size and density,
+and also proved to work by testing against controlled and verified sets of contexts.
+
+
+## Results
+Here is the main result of this repository: showing that all methods are
+roughly equivalent.
+
+![linear plot showing runtime of the various methods according to context size](results_d0.4_n10to50.png)
+
+The *false* method is a reference: a method that do nothing,
+and thus expected to fail (this is verified by unit tests).
+
+
+## Features
+
+### Running the tests
+Verify that all methods find correctly the expected solutions/concepts
+in hand-crafted contexts.
+
+    make tests
+
+Should be all green.
+
+
+### Running the benchmark
+Extensive computation. Will melt your CPU
+and generate the *output.csv* file.
+
+    make benchmark
+
+Should be all white.
+
+
+## Plotting the results
+Using the results of the benchmark, allow one to visualize the results.
+You should hack around the [drawing module](draw_in_2d.py) to get exactly what you want
+(by default it just look for measures about contexts with a density of 0.4).
+
+    make draw
+
+Should be all fighting for the first place.
+
+## Requirements
+See [requirements](requirements.txt).
+
+
+## Method detection
+See [methods module](methods.py) to see the methods automatic
+and static generation.
