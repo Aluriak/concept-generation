@@ -26,9 +26,9 @@ def inner(_it, _timer{init}):
 CONTEXTS = ('small.lp', 'big.lp')
 
 # number of objects and attributes
-CONTEXT_SIZES = range(4, 100)
+CONTEXT_SIZES = range(10, 50)
 # density of context
-CONTEXT_DENSITIES = tuple(x / 10 for x in range(1, 8))
+CONTEXT_DENSITIES = tuple(x / 10 for x in range(4, 5))
 CONTEXT_FILE_TEMPLATE = 'generated_contexts/{}_{}.lp'
 RELATION_TEMPLATE = 'rel({},{}).\n'
 
