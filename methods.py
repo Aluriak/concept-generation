@@ -22,13 +22,21 @@ def build_methods() -> iter:
             return tuple(method_func(context))
         def method_sum_func(context):
             return sum(1 for answer in method_func(context))
+        method_func.__name__ = 'method_' + name
+        method_ans_func.__name__ = 'method_ans_' + name
+        method_sum_func.__name__ = 'method_sum_' + name
         globals()['method_' + name] = method_func
         globals()['method_ans_' + name] = method_ans_func
         globals()['method_sum_' + name] = method_sum_func
-        yield method_func, method_ans_func, method_sum_func
+        yield (
+            (method_func, name),
+            (method_ans_func, name),
+            (method_sum_func, name)
+        )
 
 # collect all methods
-METHODS, METHODS_ANS, METHODS_SUM = zip(*build_methods())
+METHODS, METHODS_ANS, METHODS_SUM = map(dict, zip(*build_methods()))
+METHOD_NAMES = frozenset(METHODS_DEF.keys())
 
 
 def method_name(method:callable) -> str:
