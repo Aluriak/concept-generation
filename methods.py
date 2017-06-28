@@ -7,6 +7,7 @@ METHODS_DEF = {
     '2': 'choice',
     '3': 'choice_noint',
     '4': 'choice_exp',
+    '5': 'lit_hitzler',
 }
 
 
