@@ -39,8 +39,7 @@ def solutions_from_method(method, filename:str) -> iter:
             elif atom.predicate == 'att':
                 assert len(atom.args()) == 1
                 att.add(atom.args()[0])
-        if obj and att:  # this is needed because the method 1 is (sometimes) yielding non-concept having empty obj or att
-            yield frozenset(obj), frozenset(att)
+        yield frozenset(obj), frozenset(att)
 
 
 def pprint_concept(concept:(frozenset, frozenset)) -> str:
