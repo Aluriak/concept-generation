@@ -60,6 +60,6 @@ def run_test_routine(method, context_file):
 
 for context_file in glob.glob('test_cases/*.lp'):
     filename = os.path.basename(context_file)
-    globals()['test_method_1_on_' + filename] = partial(run_test_routine, methods.method_ans_1, context_file)
-    globals()['test_method_2_on_' + filename] = partial(run_test_routine, methods.method_ans_2, context_file)
-    globals()['test_method_3_on_' + filename] = partial(run_test_routine, methods.method_ans_3, context_file)
+    for method, name in methods.METHODS_ANS.items():
+        func = partial(run_test_routine, method, context_file)
+        globals()['test_method_' + name + '_on_' + filename] = func
