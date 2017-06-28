@@ -1,0 +1,6 @@
+.cache/
+Session.vim
+__pycache__/
+asp_py_lextab.py
+asp_py_parsetab.py
+venv/
