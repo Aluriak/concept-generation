@@ -12,8 +12,10 @@ METHODS_DEF = {met: met for met in (
 )}
 
 
-def method_choice_parallelized(context):
+def method_simple_parallelized(context):
     yield from solve(['simple.lp', context], '--parallel-mode=4,split')
+def method_choice_parallelized(context):
+    yield from solve(['choice.lp', context], '--parallel-mode=4,split')
 
 
 def build_methods() -> iter:
