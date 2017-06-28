@@ -48,18 +48,29 @@ def pprint_concept(concept:(frozenset, frozenset)) -> str:
     return '{{{}}}×{{{}}}'.format(','.join(obj), ','.join(att))
 
 
-def run_test_routine(method, context_file):
-        print('context_file =', context_file, '\t method =', method.__name__)
-        expected = frozenset(solutions_from_file(context_file))
-        found = frozenset(solutions_from_method(method, context_file))
-        print('expected =', tuple(map(pprint_concept, expected)))
-        print('   found =', tuple(map(pprint_concept, found)))
+def run_test_routine(method, context_file, should_fail=False):
+    """Total run of the testing routine for given method and context.
+
+    method -- method function to test
+    context_file -- filename of the context used to test the method
+    should_fail -- if true, expect the method to fail.
+
+    """
+    print('context_file =', context_file, '\t method =', method.__name__)
+    expected = frozenset(solutions_from_file(context_file))
+    found = frozenset(solutions_from_method(method, context_file))
+    print('expected =', tuple(map(pprint_concept, expected)))
+    print('   found =', tuple(map(pprint_concept, found)))
+    if should_fail:
+        assert expected != found
+    else:
         assert expected == found
-        print()
+    print()
 
 
+# Create and add in global scope the tests for pytest.
 for context_file in glob.glob('test_cases/*.lp'):
     filename = os.path.basename(context_file)
     for method, name in methods.METHODS_ANS.items():
-        func = partial(run_test_routine, method, context_file)
+        func = partial(run_test_routine, method, context_file, should_fail=name == 'false')
         globals()['test_method_' + name + '_on_' + filename] = func
