@@ -6,8 +6,21 @@ import csv
 import time
 import random
 import itertools as it
+import timeit
 from functools import partial
 from methods import METHODS_SUM as METHODS
+
+
+# Make timeit return both time and function return value
+timeit.template = """
+def inner(_it, _timer{init}):
+    {setup}
+    _t0 = _timer()
+    for _i in _it:
+        retval = {stmt}
+    _t1 = _timer()
+    return _t1 - _t0, retval
+"""
 
 
 CONTEXTS = ('small.lp', 'big.lp')
@@ -46,16 +59,19 @@ def generate_context(size:int, density:float) -> str:
 
 if __name__ == "__main__":
     outfile = open('output.csv', 'w')
-    output = csv.writer(outfile)
-    output.writerow(['method', '#concept', 'context size', 'context density', 'time'])
+    STATIC_FIELDS = ['context size', 'context density', '#concept']
+    METHOD_FIELDS = [name + ' time' for name in METHODS.values()]
+    output = csv.DictWriter(outfile, fieldnames=STATIC_FIELDS + METHOD_FIELDS)
+    output.writeheader()
     for size, density in it.product(CONTEXT_SIZES, CONTEXT_DENSITIES):
+        static_data = {'context size': size, 'context density': density, '#concept': 0}
         context = generate_context(size, density)
+        results = {}  # method: runtime
         print('CONTEXT:', context)
-        for method in METHODS:
-            # timeit is not used, because it makes the subproc call VERY slow
-            start = time.time()
-            result = method(context)
-            end = time.time() - start
-            print('\t' + method.__name__ + ':', result, end)
-            output.writerow([method.__name__, result, size, density, end])
+        for method, name in METHODS.items():
+            runtime, nb_concept = timeit.timeit(partial(method, context), number=3)
+            method(context)
+            print('\t' + method.__name__ + ':', nb_concept, runtime)
+            results[name + ' time'] = runtime
+        output.writerow({**static_data, **results})
     outfile.close()
