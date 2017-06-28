@@ -2,6 +2,7 @@
 
 """
 
+import csv
 import time
 import random
 import itertools as it
@@ -44,12 +45,17 @@ def generate_context(size:int, density:float) -> str:
 
 
 if __name__ == "__main__":
+    outfile = open('output.csv', 'w')
+    output = csv.writer(outfile)
+    output.writerow(['method', '#concept', 'context size', 'context density', 'time'])
     for size, density in it.product(CONTEXT_SIZES, CONTEXT_DENSITIES):
         context = generate_context(size, density)
         print('CONTEXT:', context)
         for method in METHODS:
-            # print('\t' + method.__name__ + ':', timeit(partial(method, context)))
+            # timeit is not used, because it makes the subproc call VERY slow
             start = time.time()
             result = method(context)
             end = time.time() - start
             print('\t' + method.__name__ + ':', result, end)
+            output.writerow([method.__name__, result, size, density, end])
+    outfile.close()
