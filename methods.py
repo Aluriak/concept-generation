@@ -2,7 +2,8 @@ from pyasp import asp
 from functools import partial
 
 
-METHODS_DEF = {met: met for met in (
+METHODS_DIR = 'methods/'
+METHODS_DEF = {met: METHODS_DIR + met + '.lp' for met in (
     'false',
     'simple',
     'choice',
@@ -13,16 +14,16 @@ METHODS_DEF = {met: met for met in (
 
 
 def method_simple_parallelized(context):
-    yield from solve(['simple.lp', context], '--parallel-mode=4,split')
+    yield from solve([METHODS_DIR + 'simple.lp', context], '--parallel-mode=4,split')
 def method_choice_parallelized(context):
-    yield from solve(['choice.lp', context], '--parallel-mode=4,split')
+    yield from solve([METHODS_DIR + 'choice.lp', context], '--parallel-mode=4,split')
 
 
 def build_methods() -> iter:
     """Create methods according to METHODS_DEF,
     then add it in global scope"""
     for name, filename in METHODS_DEF.items():
-        filename = filename + '.lp'
+        filename = filename
         def wrapper(filename):
             def method_func(context):
                 yield from solve([filename, context])
