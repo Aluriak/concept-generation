@@ -1,0 +1,5 @@
+
+Implementation of Next Closure algorithm with two approaches:
+
+- `nextclosure.py`: python implementation + run of the ASP method and comparison of the two.
+- `nextclosure.lp`: ASP implementation, expecting `rel/2` atoms as input.
