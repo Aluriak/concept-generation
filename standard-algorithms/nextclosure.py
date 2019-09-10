@@ -1,6 +1,6 @@
 """Implementation of close by one algorithm, mining for formal concepts.
 
-The first part is the ASP implementation, using closebyone.lp encoding.
+The first part is the ASP implementation, using nextclosure.lp encoding.
 
 The second part is a Python implementation.
 
@@ -8,6 +8,8 @@ The second part is a Python implementation.
 
 
 from collections import defaultdict
+
+
 def get_context_as_dicts_of_set(matrix) -> dict:
     asp_atoms = ''  # ASP encoding of the context
     context, invcontext = defaultdict(set), defaultdict(set)
@@ -19,7 +21,7 @@ def get_context_as_dicts_of_set(matrix) -> dict:
                 invcontext[attribute].add(object)
                 asp_atoms += f'rel({object},{attribute}).'
         asp_atoms += '\n'
-    return context, invcontext, asp_atoms
+    return dict(context), dict(invcontext), asp_atoms
 
 context, invcontext, asp_atoms = get_context_as_dicts_of_set([
     [0, 1, 0, 0, 1, 1, 0, 1, 0],
@@ -37,7 +39,7 @@ print('ATOMS:\n' + asp_atoms + '\n')
 print('USING ASP METHOD…')
 
 import clyngor
-models = clyngor.solve('closebyone.lp', inline=asp_atoms).by_arity
+models = clyngor.solve('nextclosure.lp', inline=asp_atoms).by_arity
 model = next(models)
 # assert next(models, None) is None
 
@@ -80,6 +82,28 @@ for idx in sorted(tuple(concepts)):
 
 # exit()
 
+print('USING ITERATIVE ASP METHOD…')
+
+def iterative_ASP_next_closure():
+    """Yield formal concepts of the context using next closure algorithm
+    implemented in ASP with iterative clingo feature"""
+    models = clyngor.solve('nextclosure-it.lp', inline=asp_atoms).by_arity
+    for model in models:
+        pass  # we just want the last one
+    final_model = model
+    concepts = defaultdict(lambda: [set(), set()])
+    for idx, obj in model.get('ext/2', ()):
+        concepts[idx][0].add(obj)
+    for idx, att in model.get('int/2', ()):
+        concepts[idx][1].add(att)
+    for extent, intent in concepts.values():
+        yield (frozenset(extent), frozenset(intent))
+
+
+itasp_concepts = set(iterative_ASP_next_closure())
+for ext, int in itasp_concepts:
+    print('CONCEPT:', pretty(ext), pretty(int))
+
 print('\n\nUSING PYTHON METHOD…')
 
 
@@ -114,7 +138,7 @@ def derived_attributes(objects):
 def next_closure():
     G = set(context.keys())
     M = set(invcontext.keys())
-    yield derived_attributes(M), M
+    yield derived_objects(M), M
 
     curr_subset = {max(G)}
     next_object = max(G)
@@ -144,5 +168,63 @@ for ext, int in next_closure():
     print('CONCEPT:', pretty(ext), pretty(int))
     python_concepts.add((frozenset(ext), frozenset(int)))
 
+
+print('\n\nUsing Object Intersections algorithm…')
+
+def object_intersections():
+    "Yield formal concepts of the context using OI algorithm"
+    G = set(context.keys())
+    M = set(invcontext.keys())
+    C = [(derived_objects(M), M)]  # list of all found formal concepts
+    for obj in G:
+        for ext, int in C:
+            inters = int & derived_attributes({obj})
+            if all(inters != int for _, int in C):
+                C.append((derived_objects(inters), inters))
+    return {(frozenset(ext), frozenset(int)) for ext, int in C}
+
+oint_concepts = object_intersections()
+for ext, int in oint_concepts:
+    print('CONCEPT:', pretty(ext), pretty(int))
+
+
+print('\n\nUsing Object Intersections algorithm, implemented in ASP…')
+
+def object_intersections_ASP():
+    "Yield formal concepts of the context using OI algorithm implemented in ASP"
+    G = set(context.keys())
+    M = set(invcontext.keys())
+    C = [(derived_objects(M), M)]  # list of all found formal concepts
+    for obj in G:
+        for ext, int in C:
+            data = (f'\nobject({obj}).\n'
+                    + ' '.join(f'concept_ext({x}).' for x in ext) + '\n'
+                    + ' '.join(f'concept_int({x}).' for x in int) + '\n'
+                    + ' '.join(f'concepts_int({idx},{x}).' for x in int for idx, (_, int) in enumerate(C))
+                    )
+            models = clyngor.solve('algo-oi.lp', inline=asp_atoms + data).by_arity
+            model = next(models, None)
+            if model is None: continue  # no concept yielded
+
+            extent, intent = set(), set()
+            for obj, in model.get('ext/1', ()):
+                extent.add(obj)
+            for att, in model.get('int/1', ()):
+                intent.add(att)
+            print(extent, intent)
+            C.append((frozenset(extent), frozenset(intent)))
+    return C
+
+
+# oiasp_concepts = object_intersections_ASP()
+# for ext, int in oiasp_concepts:
+    # print('CONCEPT:', pretty(ext), pretty(int))
+
 assert asp_concepts == python_concepts
 print('\nBoth methods found the same formal concepts !')
+assert asp_concepts == itasp_concepts
+print('\nIterative and non-iterative ASP methods found the same formal concepts !')
+assert oint_concepts == python_concepts
+print('\nOI method found the same formal concepts as NC !')
+# assert oint_concepts == oiasp_concepts
+# print('\nOI method found the same formal concepts as OI using ASP !')

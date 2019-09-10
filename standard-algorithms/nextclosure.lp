@@ -1,5 +1,7 @@
 % Iterative implementation of close-by-one algorithm.
 %  INPUT: rel(X,Y): object X is in relation with attribute Y.
+%  OUTPUT: ext(N,X): concept N has X in its extent.
+%          int(N,Y): concept N has Y in its intent.
 
 object(G) :- rel(G,_).
 attribute(M) :- rel(_,M).
@@ -28,11 +30,6 @@ int(N,A) :- is_concept(N) ; derived(N,A).
 % Changes of state.
 next_next(N,T) :-     is_concept(N) ; step(N) ; T=#max{O:object(O), not double_derived(N,O)}.
 next_next(N,T) :- not is_concept(N) ; step(N) ; T=#max{O:object(O), not current(N,O), O<MaxCurrent} ; MaxCurrent=#max{P:current(N,P)}.
-% If the next element is #inf, meaning #max has no value,
-%  i.e. there is no object that is not in double_derived or current,
-%  then the maximal subset of G (G itself) has been treated.
-%  The enumeration is therefore done.
-last_step(N) :- next_next(N,#inf).
 
 % Changes of state for current/2, needing an intermediary variable.
 current_intermediate(N,X) :- is_concept(N) ; double_derived(N,X).
@@ -44,6 +41,11 @@ next_current(N,X) :- current_intermediate(N,X) ; next_next(N,T) ; T>=X.
 current(N+1,X) :- next_current(N,X).
 next(N+1,X) :- next_next(N,X).
 
+% If the next element is #inf, meaning #max has no value,
+%  i.e. there is no object that is not in double_derived or current,
+%  then the maximal subset of G (G itself) has been treated.
+%  The enumeration is therefore done.
+last_step(N) :- next_next(N,#inf).
 
 
 #show.
