@@ -88,21 +88,23 @@ def iterative_ASP_next_closure():
     """Yield formal concepts of the context using next closure algorithm
     implemented in ASP with iterative clingo feature"""
     models = clyngor.solve('nextclosure-it.lp', inline=asp_atoms).by_arity
-    for model in models:
-        pass  # we just want the last one
-    final_model = model
+    # models = clyngor.solve('nextclosure-it-bymodel.lp', inline=asp_atoms).by_arity  # should also work
     concepts = defaultdict(lambda: [set(), set()])
-    for idx, obj in model.get('ext/2', ()):
-        concepts[idx][0].add(obj)
-    for idx, att in model.get('int/2', ()):
-        concepts[idx][1].add(att)
+    for model in models:
+        for idx, obj in model.get('ext/2', ()):
+            concepts[idx][0].add(obj)
+        for idx, att in model.get('int/2', ()):
+            concepts[idx][1].add(att)
     for extent, intent in concepts.values():
         yield (frozenset(extent), frozenset(intent))
+    # print('FINAL MODEL:', model)
+    # final_model = model
 
 
-itasp_concepts = set(iterative_ASP_next_closure())
+itasp_concepts = tuple(iterative_ASP_next_closure())
 for ext, int in itasp_concepts:
     print('CONCEPT:', pretty(ext), pretty(int))
+itasp_concepts = set(itasp_concepts)
 
 print('\n\nUSING PYTHON METHOD…')
 
