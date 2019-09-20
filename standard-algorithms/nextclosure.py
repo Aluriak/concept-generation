@@ -84,11 +84,10 @@ for idx in sorted(tuple(concepts)):
 
 print('USING ITERATIVE ASP METHOD…')
 
-def iterative_ASP_next_closure():
+def iterative_ASP_next_closure(asp_code:str='nextclosure-it.lp'):
     """Yield formal concepts of the context using next closure algorithm
     implemented in ASP with iterative clingo feature"""
-    models = clyngor.solve('nextclosure-it.lp', inline=asp_atoms).by_arity
-    # models = clyngor.solve('nextclosure-it-bymodel.lp', inline=asp_atoms).by_arity  # should also work
+    models = clyngor.solve(asp_code, inline=asp_atoms).by_arity
     concepts = defaultdict(lambda: [set(), set()])
     for model in models:
         for idx, obj in model.get('ext/2', ()):
@@ -97,14 +96,18 @@ def iterative_ASP_next_closure():
             concepts[idx][1].add(att)
     for extent, intent in concepts.values():
         yield (frozenset(extent), frozenset(intent))
-    # print('FINAL MODEL:', model)
-    # final_model = model
-
 
 itasp_concepts = tuple(iterative_ASP_next_closure())
 for ext, int in itasp_concepts:
     print('CONCEPT:', pretty(ext), pretty(int))
 itasp_concepts = set(itasp_concepts)
+
+# simple verification of equivalence on the two ASP iterative implementations.
+itaspbymodel_concepts = set(iterative_ASP_next_closure('nextclosure-it-bymodel.lp'))
+assert itaspbymodel_concepts == itasp_concepts, "the two ASP iterative methods are giving different results"
+print('The two iterative methods are giving the same values')
+
+
 
 print('\n\nUSING PYTHON METHOD…')
 
