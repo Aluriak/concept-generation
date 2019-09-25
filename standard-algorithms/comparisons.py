@@ -86,3 +86,7 @@ print()
 benchmark(table_size=100, size_start=10, size_step=5, methods={
     'standard': run_standard,
 })
+print()
+benchmark(densities=(0.1, 0.2, 0.3, 0.4), table_size=100, size_start=10, size_step=5, methods={
+    'standard': run_standard,
+})
