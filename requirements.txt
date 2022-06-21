@@ -1,5 +1,5 @@
 pytest==3.1.2
 matplotlib==2.0.2
-numpy==1.13.0
+numpy==1.22.0
 pandas==0.20.2
 clyngor==0.0.16
